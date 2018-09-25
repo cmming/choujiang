@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>抽奖管理后台</title>
+    <link href="./css/bootstrap.min.css" rel="stylesheet">
+</head>
+
+<body>
+
+    <script type="text/javascript" src="js/jquery.min.js"></script>
+    <script src="./js/bootstrap.min.js"></script>
+    <script src="./js/api.js"></script>
+
+    <div class="container">
+
+        <div class="well">
+            抽奖管理后台
+            <br/>
+            <br/>
+            <div>
+                中奖序号为：<span id="rewardNum"></span>
+            </div>
+        </div>
+
+        <button class="btn btn-primary" data-toggle="modal" data-target="#myModal">添加</button>
+
+        <button class="btn btn-primary" id="clearReward">清空中奖名单</button>
+        <button class="btn btn-primary" data-toggle="modal" data-target="#myModalNum">生成中奖号码个数</button>
+
+        <button class="btn btn-primary" data-toggle="modal" data-target="#myModalNumSetting">中奖号码</button>
+
+        <table class="table table-striped table-bordered" id="table">
+            <caption>抽奖人员</caption>
+            <thead>
+                <tr>
+                    <th>序号</th>
+                    <th>姓名</th>
+                    <th>手机</th>
+                    <th>操作</th>
+                </tr>
+            </thead>
+            <tbody>
+            </tbody>
+        </table>
+
+        <!-- 模态框（Modal） -->
+        <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                        <h4 class="modal-title" id="myModalLabel">添加</h4>
+                    </div>
+                    <div class="modal-body">
+
+                        <div role="form" id="form">
+                            <div class="form-group">
+                                <label for="name">姓名</label>
+                                <input type="text" class="form-control" name="name" placeholder="请输入姓名">
+                            </div>
+                            <div class="form-group">
+                                <label for="name">电话号码</label>
+                                <input type="text" class="form-control" name="tel" placeholder="请输入手机号">
+                            </div>
+                            <!-- <button type="submit" class="btn btn-default">提交</button> -->
+                        </div>
+
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                        <button type="button" class="btn btn-primary" id="save">保存</button>
+                    </div>
+                </div>
+                <!-- /.modal-content -->
+            </div>
+            <!-- /.modal -->
+        </div>
+
+        <div class="modal fade" id="myModalNum" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                        <h4 class="modal-title" id="myModalLabel">自动生成号码</h4>
+                    </div>
+                    <div class="modal-body">
+
+                        <div role="form" id="formNum">
+                            <div class="form-group">
+                                <label for="name">数量</label>
+                                <input type="number" class="form-control" name="num" placeholder="请输入号码数量">
+                            </div>
+                        </div>
+
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                        <button type="button" class="btn btn-primary" id="saveNum">保存</button>
+                    </div>
+                </div>
+                <!-- /.modal-content -->
+            </div>
+            <!-- /.modal -->
+        </div>
+
+
+        <div class="modal fade" id="myModalNumSetting" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                        <h4 class="modal-title" id="myModalLabel">请输入中奖序号</h4>
+                    </div>
+                    <div class="modal-body">
+
+                        <div role="form" id="formNumSetting">
+                            <div class="form-group">
+                                <label for="name">中奖序号</label>
+                                <input type="number" class="form-control" name="id" placeholder="请输入中奖序号">
+                            </div>
+                        </div>
+
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                        <button type="button" class="btn btn-primary" id="saveNumSetting">保存</button>
+                    </div>
+                </div>
+                <!-- /.modal-content -->
+            </div>
+            <!-- /.modal -->
+        </div>
+
+    </div>
+
+    <script>
+        var allPeople, allPeopleTem;
+
+        function getRewardNum() {
+            request('./chouJiang/zhongjiang', {}, function(data) {
+                console.log(data)
+                if (data.data !== '') {
+                    $('#rewardNum').html(data.data)
+                } else {
+                    $('#rewardNum').html('当前为随机中奖')
+                }
+            })
+        }
+
+        function renderTable(data) {
+            allPeople = data.data
+            allPeopleTem = allPeople
+                // 渲染数据
+            var tableHtml;
+            if (allPeopleTem.length > 0) {
+                allPeople.map(function(v, i) {
+                    tableHtml += "<tr><td>" + v.indexNum + "</td><td>" + v.name + "</td><td>" + v.tel + "</td><td>" +
+                        '<div class="btn-group btn-group-sm">' +
+                        '<button type="button" class="btn btn-default" data-del data-index=' + i + '>删除</button>' +
+                        '<button type="button" class="btn btn-default" data-edit data-index=' + i + '>修改</button>' +
+                        '<button type="button" class="btn btn-default" data-zhongjiang data-index=' + i + '>中奖</button>' +
+                        '</div></td>' +
+                        +"</tr>"
+                })
+            } else {
+                tableHtml += '<tr>没有数据</tr>'
+            }
+
+            $('#table tbody').html(tableHtml)
+        }
+
+        $(window).ready(function() {
+            getRewardNum()
+                // 获取所有的数据
+            request('./chouJiang/data', {}, function(data) {
+                renderTable(data)
+            })
+
+            $('#save').on('click', function() {
+                var index = $(this).attr('data-index')
+                if (index != undefined) {
+                    var resData = {
+                        id: index
+                    }
+                    $('#form input').each(function(val) {
+                        resData[$(this).attr('name')] = $(this).val()
+                    })
+                    request('./chouJiang/data/edit', resData, function(data) {
+                        console.log(data)
+                        renderTable(data)
+                        $('.close').click()
+                    })
+                } else {
+                    var resData = {}
+                    $('#form input').each(function(val) {
+                        resData[$(this).attr('name')] = $(this).val()
+                    })
+                    console.log(resData)
+                    request('./chouJiang/data/save', resData, function(data) {
+                        console.log(data)
+                        renderTable(data)
+                        $('.close').click()
+                    })
+                }
+            })
+
+            $('#saveNum').on('click', function() {
+                var resData = {}
+                $('#formNum input').each(function(val) {
+                    resData[$(this).attr('name')] = $(this).val()
+                })
+                console.log(resData)
+                request('./chouJiang/zhongjiang/create', resData, function(data) {
+                    console.log(data)
+                    renderTable(data)
+                    $('.close').click()
+                })
+            })
+
+            $('body').on('click', '[data-del]', function() {
+                var index = $(this).attr('data-index'),
+                    resData = {
+                        id: index
+                    }
+                request('./chouJiang/data/delete', resData, function(data) {
+                    console.log(data)
+                    renderTable(data)
+                })
+            })
+            $('body').on('click', '[data-edit]', function() {
+                $('#myModal').modal()
+                $('#save').attr('data-index', $(this).attr('data-index'))
+
+                for (var i in allPeople[$(this).attr('data-index')]) {
+                    $("[name='" + i + "']").val(allPeople[$(this).attr('data-index')][i])
+                }
+                console.log('edit', allPeople[$(this).attr('data-index')])
+            })
+            $('body').on('click', '[data-zhongjiang]', function() {
+                console.log('zhongjiang')
+                var resData = {
+                    id: $(this).attr('data-index')
+                }
+                request('./chouJiang/zhongjiang/add', resData, function(data) {
+                    // renderTable(data)
+                    // $('.close').click()
+                    getRewardNum()
+                })
+            })
+
+            $('#saveNumSetting').on('click', function() {
+                // var resData = {
+                //     id: $(this).attr('data-index')
+                // }
+                if($('#formNumSetting input').val()>allPeople.length){
+                    alert("输入的号码必须小于总数据的长度")
+                    return false
+                }
+                var resData = {}
+                $('#formNumSetting input').each(function(val) {
+                    resData[$(this).attr('name')] = $(this).val()
+                })
+                request('./chouJiang/zhongjiang/add', resData, function(data) {
+                    // renderTable(data)
+                    $('.close').click()
+                    getRewardNum()
+                })
+            })
+            $('#clearReward').on('click', function() {
+                request('./chouJiang/zhongjiang/del', {}, function(data) {
+                    getRewardNum()
+                })
+            })
+        })
+    </script>
+</body>
+
+</html>

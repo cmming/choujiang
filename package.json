@@ -1,0 +1,14 @@
+{
+  "name": "choujiang",
+  "version": "1.0.0",
+  "description": "抽奖的程序",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "陈明",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.16.3"
+  }
+}

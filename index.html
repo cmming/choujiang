@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>和信全国巡展抽奖</title>
+
+    <link rel="stylesheet" href="./css/index.css">
+
+    <script type="text/javascript" src="./js/jquery.min.js"></script>
+    <script type="text/javascript" src="./js/easing.js"></script>
+
+</head>
+
+<body>
+    <!-- 主体盒子-->
+    <div class="main-box">
+        <!-- 喜迎新年-->
+        <div class="title-box">
+            <img src="./images/pc-titile.png" alt="">
+        </div>
+        <!-- 装饰点缀-->
+        <!-- <div class="desc-box">
+            <img src="./images/dianzhui.png" alt="">
+        </div> -->
+        <div class="main">
+            <!-- 数字背景盒子-->
+            <div class="num-bg-box">
+                001
+                <!-- 数字盒子-->
+                <!-- <div class="num_box">
+                    <div class="num"></div>
+                    <div class="num"></div>
+                    <div class="num"></div>
+                    <div class="num"></div>
+                    <div class="num"></div>
+                    <div class="num"></div>
+                    <div class="num"></div>
+                    <div class="num"></div>
+                    <div class="num"></div>
+                    <div class="num"></div>
+                    <div class="num"></div>
+                </div> -->
+            </div>
+        </div>
+    </div>
+    <!-- 操作按钮-->
+    <div class="btn-box">
+        <div class="btn start">开始抽奖</div>
+        <div class="btn stop">停止抽奖</div>
+    </div>
+    <script src="./js/api.js"></script>
+
+    <!--js-->
+    <script>
+        var allPeople, allPeopleTem;
+        // 获取所有的数据
+        request('./chouJiang/data', {}, function(data) {
+            console.log(data)
+            allPeople = data.data
+            allPeopleTem = allPeople
+        })
+
+        function PrefixInteger(num, n) {
+            return (Array(n).join(0) + num).slice(-n);
+        }
+
+        function randomNum(minNum, maxNum) {
+            switch (arguments.length) {
+                case 1:
+                    return parseInt(Math.random() * minNum + 1, 10);
+                    break;
+                case 2:
+                    return parseInt(Math.random() * (maxNum - minNum + 1) + minNum, 10);
+                    break;
+                default:
+                    return 0;
+                    break;
+            }
+        }
+        // 定义
+        var u = 100;
+        // var n = 1;
+        var timer; //定义滚动的定时器
+        var result; //指定中奖结果,可以抽取指定数组中的某一个
+        var isBegin = false; //标识能否开始抽奖
+
+        $(".num").css('backgroundPositionY', 200); //开始13888888888
+        $(".num").eq(0).css('backgroundPositionY', -100)
+        $(".num").eq(1).css('backgroundPositionY', -300)
+
+        //执行数字滚动
+        function run() {
+            //当前号码
+            var n = randomNum(0, allPeople.length - 1)
+                // var num_arr = allPeople[(n - 1) % allPeople.length];
+                // console.log(num_arr, allPeople)
+                // backgroundPositionY: (u * 60) - (u * num_arr[index])
+                // n++;
+                // $(".num").each(function(index) {
+                //     var _num = $(this);
+                //     _num.animate({
+                //         backgroundPositionY: ((u + 1) * n * (index + 1))
+                //     }, 100);
+
+            // });
+
+            $('.num-bg-box').html(allPeople[n]['indexNum'])
+                // $('.num-bg-box').html(num_arr['indexNum'])
+                // $('.num-bg-box').html(num_arr['name'] + '   ' +num_arr['tel'].substr(0, 3) + '****'+num_arr['tel'].substr(7))
+            timer = window.setTimeout(run, 100);
+            isBegin = true;
+        }
+        $(function() {
+            //开始抽奖
+            $('.start').click(function() {
+                if (isBegin) {
+                    return false;
+                } else {
+                    run();
+                }
+            });
+            //停止抽奖
+            $('.stop').click(function() {
+                // 获取好中奖的结果
+                var itemIndex;
+                request('./chouJiang/zhongjiang', {}, function(data) {
+                    console.log(data)
+                    if (data.data == '') {
+                        var randomNumStr = randomNum(0, allPeople.length - 1)
+                        itemIndex = allPeople[randomNumStr]['indexNum']
+                            // itemIndex = parseInt(randomNum(0, allPeople.length - 1))
+                    } else {
+                        itemIndex = data.data
+                    }
+                    $('.num-bg-box').html(itemIndex)
+                        // result = allPeople[itemIndex].tel
+                        // console.log(result, itemIndex)
+                        // $('.num-bg-box').html(allPeople[itemIndex]['indexNum'])
+                        // $('.num-bg-box').html(allPeople[itemIndex]['name'] + '   '+ allPeople[itemIndex]['tel'].substr(0, 3) + '****' + allPeople[itemIndex]['tel'].substr(7))
+                        // var num_arr = (result + '').split('');
+
+                    // $(".num").each(function(index) {
+                    //     var _num = $(this);
+                    //     setTimeout(function() {
+                    //         _num.animate({
+                    //             backgroundPositionY: (u * 60) - (u * num_arr[index])
+                    //         }, {
+                    //             duration: 500,
+                    //             easing: "easeInOutCirc",
+                    //             complete: function() {
+                    //                 if (index == 10) {
+                    //                     isBegin = false;
+                    //                 }
+                    //             }
+                    //         });
+                    //     }, 100);
+                    // });
+                    window.clearTimeout(timer);
+                    isBegin = false;
+                })
+            });
+        });
+    </script>
+</body>
+
+</html>
